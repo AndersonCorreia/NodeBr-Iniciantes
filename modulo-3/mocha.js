@@ -1,3 +1,8 @@
+/*
+* Codigo produzido durante o curso NodeBr para iniciantes
+* Autor: anderson correia
+* Data: 13/03/2019
+*/
 const assert= require('assert')
 
 const {getPeople } = require("./service")
