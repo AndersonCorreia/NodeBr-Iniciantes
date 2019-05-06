@@ -37,14 +37,13 @@ class DataBase {
     async list(idOrName) {
         const data = await this.getData()
         const list = data.filter(
-            (item => idOrName ? (item.id == parseInt(idOrName) || item.name == idOrName) : true))
+            (item => idOrName ? (item.id == parseInt(idOrName) || item.name == idOrName) : true)
+        )
+        return list
     }
 
     async remove(id, Name) {
-        if (!(id || Name)) {
-            this.writeData([])
-            return
-        }
+
         const data = await this.getData()
         const indice = data.findIndex((item) => item.id == parseInt(id) || item.name == Name)
         if (indice == -1) {
@@ -53,6 +52,10 @@ class DataBase {
         const rm = data.splice(indice, 1)
         await this.writeData(data)
         return rm
+    }
+    async removeAll(){
+        this.writeData([])
+        return
     }
     async actualize(actualize, idOrName) {
         const data = await this.getData()

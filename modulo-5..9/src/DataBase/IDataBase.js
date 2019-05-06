@@ -1,9 +1,11 @@
-const IDataBase = require("./IDataBase.js")
-
-class MongoDB extends IDataBase {
-    constructor() {
-        super()
+class NotImplementedException extends Error{
+    constructor(){
+        super("Metodo não implementado")
     }
+}
+
+class IDataBase {
+    
     create(item) {
         throw new NotImplementedException()
     }
@@ -16,9 +18,5 @@ class MongoDB extends IDataBase {
     delete(id) {
         throw new NotImplementedException()
     }
-    isConnected(){
-        throw new NotImplementedException()
-    }
 }
-
-module.exports = MongoDB
+module.exports = IDataBase

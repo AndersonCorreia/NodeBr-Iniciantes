@@ -3,7 +3,7 @@
 * Autor: anderson correia
 * Data: 14/03/2019
 */
-const { deepStrictEqual,ok} = require("assert")
+const { deepStrictEqual} = require("assert")
 const DataBase = require("./DataBase.js")
 const DEFAULT_ITEM = {
     name: "Ichigo",
@@ -18,6 +18,7 @@ const DEFAULT_ITEM_ATUALIZE = {
 
 describe("suite da manipulação dos herois", () => {
     before(async () =>{
+        await DataBase.removeAll()
         await DataBase.toRegister(DEFAULT_ITEM)
         await DataBase.toRegister(DEFAULT_ITEM_ATUALIZE)  
     })
@@ -35,10 +36,11 @@ describe("suite da manipulação dos herois", () => {
         console.log( await DataBase.list())//visualizar se o heroi foi removido da lista
     })
     it("Deve atualizar um heroi", async () =>{
-        await DataBase.toRegister(DEFAULT_ITEM_ATUALIZE)
+        //await DataBase.toRegister(DEFAULT_ITEM_ATUALIZE)
         const expected = { ...DEFAULT_ITEM_ATUALIZE , power:"Inteligência , Força e Beleza"}
         await DataBase.actualize(expected, DEFAULT_ITEM_ATUALIZE.id)
         const [result] = await DataBase.list(DEFAULT_ITEM_ATUALIZE.id)
+        console.log(result)
         deepStrictEqual(expected, result)
     })
 })
