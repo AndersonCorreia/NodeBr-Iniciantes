@@ -8,15 +8,14 @@ class Postgres extends IDataBase {
         this._schema = schema
     }
     async create(item){
-        const { datavalues } = await this._schema.create(item)
-        return datavalues
+        const datavalues = await this._schema.create(item)
+        return datavalues.id
     }
     async read(query, skip =0 , limit=10){
-        return await this._schema.findall({where: query , raw: true}).skip(skip).limit(limit)
+        return await this._schema.findAll({where: query , raw: true})
     }
     async update(id,item){
-        await this._schema.update( item,{ where:{id: id} })
-        return true
+        return await this._schema.update( item,{ where:{id: id} })
     }
     async delete(id){
         return await this._schema.destroy({ where: {id} })

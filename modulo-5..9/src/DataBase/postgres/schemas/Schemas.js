@@ -9,11 +9,11 @@ async function getHeroesSchema(conection){
             primaryKey: true, // chave de buscar primaria
             autoIncrement: true //é incrementado automaticamente
         },
-        nome: {
+        name: {
             type: Sequelize.STRING,
             required : true
         },
-        poder: {
+        power: {
             type : Sequelize.STRING,
             required : true
         }
@@ -26,4 +26,4 @@ async function getHeroesSchema(conection){
     return Heroes
 }
 
-module.exports = { getHeroesSchema}
+module.exports = getHeroesSchema

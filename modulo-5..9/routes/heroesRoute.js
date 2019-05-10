@@ -3,7 +3,7 @@ const joi = require("joi")
 const failAction = (request, headers, error) => {
     throw error
 }
-
+var result = {}
 class HeroRoute extends baseRoute {
     constructor(db) {
         super()
@@ -15,19 +15,19 @@ class HeroRoute extends baseRoute {
             path: "/heroes",
             method: "GET",
             config: {
-                tags:["api"],
+                tags: ["api"],
                 description: " Lista os herois",
-                notes: " suporte a paginação dos resultados e filtro por nome",
+                //notes: " suporte a paginação dos resultados e filtro por nome",
                 validate: {
                     failAction: failAction,
                     query: {
-                        skip: joi.number().integer().default(0).description("resultados que são ignorados/pulados inicialmente"),
-                        limit: joi.number().integer().default(10).description("limite de itens por resultado"),
-                        nome: joi.string().min(3).max(100).description("string utilizada na busca pelo heroi(atráves do nome")
+                        //skip: joi.number().integer().default(0).description("resultados que são ignorados/pulados inicialmente"),
+                        //limit: joi.number().integer().default(10).description("limite de itens por resultado"),
+                        nome: joi.string().max(100).description("string utilizada na busca pelo heroi(atráves do nome")
                     }
                 }
             },
-            handler: (request, head) => {//metodo que é executado ao acessar o endereço do path
+            handler: async (request, head) => {//metodo que é executado ao acessar o endereço do path
                 try {
                     const {
                         skip,
@@ -35,18 +35,21 @@ class HeroRoute extends baseRoute {
                         nome
                     } = request.query
 
-                    const query = {}
+                    var query = {}
                     if (nome) {//se o nome foi enviado a busca é feita com ele, se não vai a query vazia
                         query = {
-                            nome: { $regex: ".*" + nome + "*." }//comando do mongoDb basicamente um contains 
+                            //name: { $regex: ".*" + nome + "*." }//comando do mongoDb basicamente um contains 
+                            name: nome
                         }
                     }
-
-                    return this._Db.read(query, skip, limit)
+                    return await this._Db.read(query, skip, limit)
                 }
                 catch (error) {
                     console.log("error: ", error)
-                    return "error interno no servidor, verifique a URL"
+                    return {
+                        message: "error interno no servidor, verifique a URL",
+                        error: error
+                    }
                 }
             }
         }
@@ -57,7 +60,7 @@ class HeroRoute extends baseRoute {
             path: "/heroes",
             method: "POST",
             config: {
-                tags:["api"],
+                tags: ["api"],
                 description: " cadastra herois",
                 notes: " necessario nome e poder do heroi",
                 validate: {
@@ -69,22 +72,26 @@ class HeroRoute extends baseRoute {
                 }
             },
             handler: async (request) => {//metodo que é executado ao acessar o endereço do path
+                var id
                 try {
                     const {
                         poder,
                         nome
                     } = request.payload
 
-                    const result = await this._Db.create({ nome, poder })
+                    id = await this._Db.create({ name:nome, power:poder })
                     return {
                         message: "heroi cadastrado com sucesso",
-                        _id: result._id
+                        _id: id
                     }
-
                 }
                 catch (error) {
                     console.log("error: ", error)
-                    return "error interno no servidor, verifique a URL"
+                    return {
+                        message: "error interno no servidor",
+                        error: error,
+                        status_code:200
+                    }
                 }
             }
         }
@@ -95,7 +102,7 @@ class HeroRoute extends baseRoute {
             path: "/heroes/{id}",
             method: "PATCH",
             config: {
-                tags:["api"],
+                tags: ["api"],
                 description: " atualiza um heroi",
                 notes: " pode atualizar qualquer campo",
                 validate: {
@@ -115,30 +122,37 @@ class HeroRoute extends baseRoute {
                         nome
                     } = request.payload
                     const update = {}
-                    if(nome){
-                        update.name=nome
+                    if (nome) {
+                        update.name = nome
                     }
-                    if(poder){
-                        update.power=poder
+                    if (poder) {
+                        update.power = poder
                     }
 
-                    await this._Db.update(request.params.id,update)
-                    return  "heroi atualizado com sucesso"
+                    result = await this._Db.update(request.params.id, update)
+                    if(result==0){
+                        throw new Error("Heroi não encontrado")
+                    }
+                    return "heroi atualizado com sucesso"
                 }
                 catch (error) {
                     console.log("error: ", error)
-                    return "error interno no servidor, verifique a URL"
+                    return {
+                        message: "error interno no servidor",
+                        error: error,
+                        status_code:200
+                    }
                 }
             }
         }
     }
 
-    updateAll() {
+    fullUpdate() {
         return {
             path: "/heroes/{id}",
             method: "PUT",
             config: {
-                tags:["api"],
+                tags: ["api"],
                 description: " atualiza todos os dados de um heroi",
                 validate: {
                     params: {
@@ -156,12 +170,19 @@ class HeroRoute extends baseRoute {
                         poder,
                         nome
                     } = request.payload
-                    await this._Db.update(request.params.id,{nome , poder})
-                    return  "heroi atualizado com sucesso"
+                    result = await this._Db.update(request.params.id, { name:nome, power:poder })
+                    if(result==0){
+                        throw new Error("Heroi não encontrado")
+                    }
+                    return "heroi atualizado com sucesso"
                 }
                 catch (error) {
                     console.log("error: ", error)
-                    return "error interno no servidor, verifique a URL"
+                    return {
+                        message: "error interno no servidor",
+                        error: error,
+                        status_code:200
+                    }
                 }
             }
         }
@@ -172,7 +193,7 @@ class HeroRoute extends baseRoute {
             path: "/heroes/{id}",
             method: "DELETE",
             config: {
-                tags:["api"],
+                tags: ["api"],
                 description: " remover um heroi",
                 notes: " o id tem que ser valido",
                 validate: {
@@ -183,12 +204,19 @@ class HeroRoute extends baseRoute {
             },
             handler: async (request) => {//metodo que é executado ao acessar o endereço do path
                 try {
-                    await this._Db.delete(request.params.id)
-                    return  "heroi deletado com sucesso com sucesso"
+                    result = await this._Db.delete(request.params.id)
+                    if(result==0){
+                        throw new Error("Heroi não encontrado")
+                    }
+                    return "heroi deletado com sucesso com sucesso"
                 }
                 catch (error) {
                     console.log("error: ", error)
-                    return "error interno no servidor, verifique a URL"
+                    return {
+                        message: "error interno no servidor",
+                        error: error.message,
+                        status_code:200
+                    }
                 }
             }
         }
