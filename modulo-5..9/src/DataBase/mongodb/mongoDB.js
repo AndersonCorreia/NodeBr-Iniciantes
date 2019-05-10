@@ -1,10 +1,10 @@
 const IDataBase = require("./../IDataBase.js")
-const mongoose = require("Mongoose")
+const mongoose = require("mongoose")
 
 const STATUS = ["disconectado", "conectado", "conectando", "disconectando"]
 
 class MongoDB extends IDataBase {
-    constructor(Schema, conection) {
+    constructor(conection , Schema) {
         super()
         this._schema = Schema
         this._conection = conection
@@ -38,8 +38,8 @@ class MongoDB extends IDataBase {
         return false
     }
     static async connect() {
-        mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true},
-         function(error) {
+        await mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true},
+        function(error) {
             if(!error) return
              console.log(" falha na conexão! \n", error)
              throw error

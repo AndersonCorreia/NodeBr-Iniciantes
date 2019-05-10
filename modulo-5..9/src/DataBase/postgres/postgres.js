@@ -31,14 +31,20 @@ class Postgres extends IDataBase {
             return false
         }
     }
-    static connect(){
-        const connection = new Sequelize(process.env.POSTGRES_URL,{
+    static async connect(){
+        const connection = await new Sequelize(process.env.POSTGRES_URL,{
             quoteIdentifers: false, //não alterar as configurações padroes do banco
-            operatorsAliases: false, // deixar de mostrar uns avisos e erros
             logging: false,
             ssl: process.env.SSL_DB
-        })
-        return connection
+        }, )
+        try{
+            await connection.authenticate()
+            return connection
+        }
+        catch(error){
+            console.log("Ocorreu um erro : ", error)
+            throw error
+        }
     }
 }
 module.exports = Postgres

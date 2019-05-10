@@ -20,10 +20,10 @@ class HeroRoute extends baseRoute {
                 notes: " suporte a paginação dos resultados e filtro por nome",
                 validate: {
                     failAction: failAction,
-                    querry: {
-                        skip: joi.number().integer().default(0),
-                        limit: joi.number().integer().default(10),
-                        nome: joi.string().min(3).max(100)
+                    query: {
+                        skip: joi.number().integer().default(0).description("resultados que são ignorados/pulados inicialmente"),
+                        limit: joi.number().integer().default(10).description("limite de itens por resultado"),
+                        nome: joi.string().min(3).max(100).description("string utilizada na busca pelo heroi(atráves do nome")
                     }
                 }
             },
@@ -33,16 +33,16 @@ class HeroRoute extends baseRoute {
                         skip,
                         limit,
                         nome
-                    } = request.querry
+                    } = request.query
 
-                    const querry = {}
+                    const query = {}
                     if (nome) {//se o nome foi enviado a busca é feita com ele, se não vai a query vazia
-                        querry = {
+                        query = {
                             nome: { $regex: ".*" + nome + "*." }//comando do mongoDb basicamente um contains 
                         }
                     }
 
-                    return this._Db.read(querry, skip, limit)
+                    return this._Db.read(query, skip, limit)
                 }
                 catch (error) {
                     console.log("error: ", error)
