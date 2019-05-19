@@ -1,9 +1,14 @@
-const baseRoute = require("./base/baseRoute")
+﻿const baseRoute = require("./base/baseRoute")
 const joi = require("joi")
 const failAction = (request, headers, error) => {
     throw error
 }
 var result = {}
+
+const headers = joi.object({
+    authorization : joi.string().required()
+}).unknown()
+
 class HeroRoute extends baseRoute {
     constructor(db) {
         super()
@@ -17,14 +22,15 @@ class HeroRoute extends baseRoute {
             config: {
                 tags: ["api"],
                 description: " Lista os herois",
-                //notes: " suporte a paginação dos resultados e filtro por nome",
+                notes: " suporte a paginação dos resultados e filtro por nome",
                 validate: {
                     failAction: failAction,
                     query: {
-                        //skip: joi.number().integer().default(0).description("resultados que são ignorados/pulados inicialmente"),
-                        //limit: joi.number().integer().default(10).description("limite de itens por resultado"),
+                        skip: joi.number().integer().default(0).description("resultados que são ignorados/pulados inicialmente"),
+                        limit: joi.number().integer().default(10).description("limite de itens por resultado"),
                         nome: joi.string().max(100).description("string utilizada na busca pelo heroi(atráves do nome")
-                    }
+                    },
+                    headers
                 }
             },
             handler: async (request, head) => {//metodo que é executado ao acessar o endereço do path
@@ -68,7 +74,8 @@ class HeroRoute extends baseRoute {
                     payload: {
                         nome: joi.string().required().min(3).max(100),
                         poder: joi.string().required().min(3).max(100)
-                    }
+                    },
+                    headers
                 }
             },
             handler: async (request) => {//metodo que é executado ao acessar o endereço do path
@@ -112,7 +119,8 @@ class HeroRoute extends baseRoute {
                     payload: {
                         nome: joi.string().min(3).max(100),
                         poder: joi.string().min(3).max(100)
-                    }
+                    },
+                    headers
                 }
             },
             handler: async (request) => {//metodo que é executado ao acessar o endereço do path
@@ -139,7 +147,7 @@ class HeroRoute extends baseRoute {
                     console.log("error: ", error)
                     return {
                         message: "error interno no servidor",
-                        error: error,
+                        error: error.message,
                         status_code:200
                     }
                 }
@@ -161,7 +169,8 @@ class HeroRoute extends baseRoute {
                     payload: {
                         nome: joi.string().required().min(3).max(100),
                         poder: joi.string().required().min(3).max(100)
-                    }
+                    },
+                    headers
                 }
             },
             handler: async (request) => {//metodo que é executado ao acessar o endereço do path
@@ -180,7 +189,7 @@ class HeroRoute extends baseRoute {
                     console.log("error: ", error)
                     return {
                         message: "error interno no servidor",
-                        error: error,
+                        error: error.message,
                         status_code:200
                     }
                 }

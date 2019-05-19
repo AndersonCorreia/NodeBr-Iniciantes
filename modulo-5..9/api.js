@@ -1,4 +1,4 @@
-const { config } = require("dotenv")
+﻿const { config } = require("dotenv")
 const { join } = require("path")
 const { ok } = require("assert")
 
@@ -17,6 +17,9 @@ const app = new hapi.Server({ port: process.env.PORT })
 const mongoDb = require("./src/DataBase/mongodb/mongoDB")
 const schemaHeroes = require("./src/DataBase/mongodb/Schemas/heroesSchema")
 const HeroRoutes = require("./routes/heroesRoute")
+const AuthRoutes = require("./routes/authRoutes")
+const HapiJwt = require("hapi-auth-jwt2")
+const jwt_secret = "algebra123"
 
 const postgresDb = require("./src/DataBase/postgres/postgres")
 const tableHeroes = require("./src/DataBase/postgres/schemas/Schemas")
@@ -33,14 +36,15 @@ function mapRoutes(instance, methods) {
 }
 async function main() {
 
-    //const connection = await mongoDb.connect()
-    //var DataBase = await new mongoDb(schemaHeroes ,connection)
-    //const heroesRoute = new HeroRoutes(DataBase)
+    var connection //= await mongoDb.connect()
+    var DataBase = await new mongoDb(connection ,schemaHeroes )
+    const heroesRoute = new HeroRoutes(DataBase)
+    const authRoutes = new AuthRoutes(DataBase, jwt_secret)
 
-    const connection = await postgresDb.connect()//conectando ao banco
+    /*const connection = await postgresDb.connect()//conectando ao banco
     const schema = await tableHeroes(connection)// conectando a tabela heroes no banco
     var DataBase = await new postgresDb(connection , schema)
-    const heroesRoute = new HeroRoutes(DataBase)
+    const heroesRoute = new HeroRoutes(DataBase)*/
 
     const swaggerOptions = {
         info: {
@@ -56,12 +60,29 @@ async function main() {
             { 
                 plugin: hapiSwagger.plugin, 
                 options: swaggerOptions 
-            }
+            },
+            HapiJwt
         ])
         const routes = mapRoutes(heroesRoute, HeroRoutes.methods())
         //console.log(routes)
-        await app.route(routes)
+        await app.route([
+            ...routes,
+            ...mapRoutes(authRoutes, AuthRoutes.methods())
+        ])
+        await app.auth.strategy("jwt", "jwt", {
+            key: jwt_secret,
+            /*options: {
+                expiresIn : 20 //segundos
+            }*/
+            validate: (dado , request) => {
 
+
+                 return {
+                     isValid : true
+                 }
+            }
+        })
+        app.auth.default("jwt")
         await app.start()
         console.log("servidor rodando na porta :", app.info.port)
 

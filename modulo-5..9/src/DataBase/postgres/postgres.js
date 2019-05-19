@@ -1,4 +1,4 @@
-const IDataBase = require("./../IDataBase.js")
+﻿const IDataBase = require("./../IDataBase.js")
 const Sequelize = require('sequelize')
 
 class Postgres extends IDataBase {
@@ -12,7 +12,24 @@ class Postgres extends IDataBase {
         return datavalues.id
     }
     async read(query, skip =0 , limit=10){
-        return await this._schema.findAll({where: query , raw: true})
+        var list = await this._schema.findAll({ where: {}, raw: true })
+        if (query.name) {
+            list = list.filter((item) => {//mapear os itens que tem parte do nome procurado, não é case sensitive
+                if (item.name.toLocaleLowerCase().includes(query.name.toLocaleLowerCase())) {
+                    return true
+                }
+                return false
+            })
+        }
+        var array = []
+        limit=skip+limit
+        for(let i=skip ; i<limit ; i++){
+            if(!list[i]){
+                break
+            }
+            array[i-skip]=list[i]
+        }
+        return array
     }
     async update(id,item){
         return await this._schema.update( item,{ where:{id: id} })

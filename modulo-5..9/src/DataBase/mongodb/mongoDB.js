@@ -4,7 +4,7 @@ const mongoose = require("mongoose")
 const STATUS = ["disconectado", "conectado", "conectando", "disconectando"]
 
 class MongoDB extends IDataBase {
-    constructor(conection , Schema) {
+    constructor(conection, Schema) {
         super()
         this._schema = Schema
         this._conection = conection
@@ -12,8 +12,12 @@ class MongoDB extends IDataBase {
     async create(item) {
         return await this._schema.create(item)
     }
-    async read(item, skip = 10, limit = 10) {
-        return this._schema.find(item).skip(skip).limit(10)
+    async read(item, skip = 0, limit = 10) {
+        const name = item.name
+        if(name){
+            item.name = { $regex: ".*" + name + "*." }
+        }
+        return this._schema.find(item).skip(skip).limit(limit)
     }
     async update(id, item) {
         return await this._schema.updateOne({ _id: id }, { $set: item })//returna um objeto com o campo 
@@ -38,14 +42,14 @@ class MongoDB extends IDataBase {
         return false
     }
     static async connect() {
-        await mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true},
-        function(error) {
-            if(!error) return
-             console.log(" falha na conexão! \n", error)
-             throw error
-         })
-         mongoose.connection.once("open", () => console.log( "conexão estabelecida com sucesso"))
-         return mongoose.connection
+            await mongoose.connect(process.env.MONGODB_URL, { useNewUrlParser: true },
+            function (error) {
+                if (!error) return
+                console.log(" falha na conexão! \n", error)
+                throw error
+            })
+        mongoose.connection.once("open", () => console.log("conexão estabelecida com sucesso"))
+        return mongoose.connection
     }
 }
 

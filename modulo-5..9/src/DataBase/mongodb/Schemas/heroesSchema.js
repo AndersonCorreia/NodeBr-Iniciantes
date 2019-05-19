@@ -1,11 +1,11 @@
 const mongoose = require("mongoose")
 
 const heroesSchema = new mongoose.Schema({
-            nome : {
+            name : {
                 type : String,
                 required: true 
             },
-            poder : {
+            power : {
                 type: String,
                 required: true
             },
