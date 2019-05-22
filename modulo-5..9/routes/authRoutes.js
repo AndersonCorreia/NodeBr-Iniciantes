@@ -4,6 +4,7 @@ const failAction = (request, headers, error) => {
     throw error
 }
 const jwt = require("jsonwebtoken")
+const passhelper = require("./../Helpers/passwordHelper")
 
 class authRoute extends baseRoute {
     constructor(db, secret) {
@@ -12,15 +13,16 @@ class authRoute extends baseRoute {
         this._Secret = secret
     }
 
-    login() {
+    createUser() {
         return {
-            path: "/login",
+            path: "/user/create",
             method: "POST",
             config: {
                 auth: false,
                 tags: ["api"],
-                description: "obter token",
+                description: "criar usuario e efetua login",
                 validate: {
+                    failAction,
                     payload: {
                         username: joi.string().required(),
                         password: joi.string().required()
@@ -28,11 +30,57 @@ class authRoute extends baseRoute {
                 }
             },
             handler: async (request) =>{
-                const {username, password} = request.payload
-
-                const token = jwt.sign({
+                var {username, password} = request.payload
+                password = await passhelper.hash(password)
+                const user = await this._Db.create({
+                    Username: username.toLowerCase(),
+                    Password: password
+                })
+                console.log(user)
+                const token = await jwt.sign({
                     username,
-                    id: 1
+                    id: user.id
+                }, this._Secret)
+
+                return {
+                    token
+                }
+            }
+        }
+    }
+    login() {
+        return {
+            path: "/user/login",
+            method: "GET",
+            config: {
+                auth: false,
+                tags: ["api"],
+                description: "obter token",
+                validate: {
+                    failAction,
+                    query: {
+                        username: joi.string().required(),
+                        password: joi.string().required()
+                    }
+                }
+            },
+            handler: async (request) =>{
+                const {username, password} = request.query
+
+                const [user] = await this._Db.read({
+                    username: username.toLowerCase()
+                })
+                console.log(user)
+                if(!user){
+                    throw new Error(" Usuario ou Senha incorreta")
+                }
+                const valid = await passhelper.compare(password, user.Password)
+                if(!valid){
+                    throw new Error(" Usuario ou Senha incorreta")
+                }
+                const token = await jwt.sign({
+                    username,
+                    id: user.id
                 }, this._Secret)
 
                 return {

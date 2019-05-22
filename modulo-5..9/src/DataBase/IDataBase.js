@@ -12,7 +12,7 @@ class IDataBase {
     read(query) {
         throw new NotImplementedException()
     }
-    update(id, item) {
+    update(id, item, upsert) {
         throw new NotImplementedException()
     }
     delete(id) {

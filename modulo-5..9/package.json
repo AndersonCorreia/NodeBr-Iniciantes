@@ -13,6 +13,7 @@
   "author": "andersonCorreia",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^3.0.6",
     "cross-env": "^5.2.0",
     "dotenv": "^8.0.0",
     "hapi": "^18.1.0",

@@ -23,7 +23,7 @@ const jwt_secret = "algebra123"
 
 const postgresDb = require("./src/DataBase/postgres/postgres")
 const tableHeroes = require("./src/DataBase/postgres/schemas/Schemas")
-const joi = require("joi")
+const tableUser = require("./src/DataBase/postgres/schemas/userShema")
 
 //frameworks para documentação da api
 const hapiSwagger = require("hapi-swagger")
@@ -36,20 +36,20 @@ function mapRoutes(instance, methods) {
 }
 async function main() {
 
-    var connection //= await mongoDb.connect()
+    var connection = await mongoDb.connect()
     var DataBase = await new mongoDb(connection ,schemaHeroes )
     const heroesRoute = new HeroRoutes(DataBase)
-    const authRoutes = new AuthRoutes(DataBase, jwt_secret)
+    
 
-    /*const connection = await postgresDb.connect()//conectando ao banco
-    const schema = await tableHeroes(connection)// conectando a tabela heroes no banco
-    var DataBase = await new postgresDb(connection , schema)
-    const heroesRoute = new HeroRoutes(DataBase)*/
+    var connectionU = await postgresDb.connect()//conectando ao banco
+    const schema = await tableUser(connectionU)// conectando a tabela de users no banco
+    var DataBaseUser = await new postgresDb(connectionU , schema, true)
+    const authRoutes = new AuthRoutes(DataBaseUser, jwt_secret)
 
     const swaggerOptions = {
         info: {
             title: " API - curso Node Br",
-            version: "v1.0"
+            version: "v1.3"
         },
         lang: "pt"
     }
@@ -74,11 +74,13 @@ async function main() {
             /*options: {
                 expiresIn : 20 //segundos
             }*/
-            validate: (dado , request) => {
-
+            validate: async (dado , request) => {
+                const [result] = DataBaseUser.read({
+                    Username: dado.Username.toLowerCase()
+                })
 
                  return {
-                     isValid : true
+                     isValid : result ? true : false
                  }
             }
         })
