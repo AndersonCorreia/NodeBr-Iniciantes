@@ -37,13 +37,13 @@ function mapRoutes(instance, methods) {
 async function main() {
 
     var connection = await mongoDb.connect()
-    var DataBase = await new mongoDb(connection ,schemaHeroes )
+    var DataBase = await new mongoDb(connection, schemaHeroes)
     const heroesRoute = new HeroRoutes(DataBase)
-    
+
 
     var connectionU = await postgresDb.connect()//conectando ao banco
     const schema = await tableUser(connectionU)// conectando a tabela de users no banco
-    var DataBaseUser = await new postgresDb(connectionU , schema, true)
+    var DataBaseUser = await new postgresDb(connectionU, schema, true)
     const authRoutes = new AuthRoutes(DataBaseUser, jwt_secret)
 
     const swaggerOptions = {
@@ -57,9 +57,9 @@ async function main() {
         await app.register([
             Vision,
             Inert,
-            { 
-                plugin: hapiSwagger.plugin, 
-                options: swaggerOptions 
+            {
+                plugin: hapiSwagger.plugin,
+                options: swaggerOptions
             },
             HapiJwt
         ])
@@ -74,14 +74,25 @@ async function main() {
             /*options: {
                 expiresIn : 20 //segundos
             }*/
-            validate: async (dado , request) => {
-                const [result] = DataBaseUser.read({
-                    Username: dado.Username.toLowerCase()
-                })
+            validate: async (dado, request) => {
 
-                 return {
-                     isValid : result ? true : false
-                 }
+                try {
+                    const [result] = await DataBaseUser.read({
+                        Username: dado.username.toLowerCase()
+                    })
+
+                    return {
+                        isValid: result ? true : false
+                    }
+                }
+                catch (error) {
+                    console.log("error: ", error)
+                    return {
+                        message: "acesso não autorizado",
+                        error: error.message,
+                        statusCode:401
+                    }
+                }
             }
         })
         app.auth.default("jwt")

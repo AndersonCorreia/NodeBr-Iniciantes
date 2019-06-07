@@ -45,7 +45,9 @@ class HeroRoute extends baseRoute {
                     if (nome) {//se o nome foi enviado a busca é feita com ele, se não vai a query vazia
                         query = {
                             //name: { $regex: ".*" + nome + "*." }//comando do mongoDb basicamente um contains 
-                            name: nome
+                            name: {
+                                contains: nome
+                            }
                         }
                     }
                     return await this._Db.read(query, skip, limit)
@@ -54,7 +56,8 @@ class HeroRoute extends baseRoute {
                     console.log("error: ", error)
                     return {
                         message: "error interno no servidor, verifique a URL",
-                        error: error
+                        error: error.message,
+                        statusCode: 200
                     }
                 }
             }
@@ -86,10 +89,10 @@ class HeroRoute extends baseRoute {
                         nome
                     } = request.payload
 
-                    id = await this._Db.create({ name:nome, power:poder })
+                    item = await this._Db.create({ name:nome, power:poder })
                     return {
                         message: "heroi cadastrado com sucesso",
-                        _id: id
+                        _id: item.id ? item.id : item._id
                     }
                 }
                 catch (error) {
@@ -97,7 +100,7 @@ class HeroRoute extends baseRoute {
                     return {
                         message: "error interno no servidor",
                         error: error,
-                        status_code:200
+                        statusCode:200
                     }
                 }
             }
@@ -148,7 +151,7 @@ class HeroRoute extends baseRoute {
                     return {
                         message: "error interno no servidor",
                         error: error.message,
-                        status_code:200
+                        statusCode:200
                     }
                 }
             }
@@ -190,7 +193,7 @@ class HeroRoute extends baseRoute {
                     return {
                         message: "error interno no servidor",
                         error: error.message,
-                        status_code:200
+                        statusCode:200
                     }
                 }
             }
@@ -224,7 +227,7 @@ class HeroRoute extends baseRoute {
                     return {
                         message: "error interno no servidor",
                         error: error.message,
-                        status_code:200
+                        statusCode:200
                     }
                 }
             }

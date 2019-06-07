@@ -29,21 +29,30 @@ class authRoute extends baseRoute {
                     }
                 }
             },
-            handler: async (request) =>{
-                var {username, password} = request.payload
-                password = await passhelper.hash(password)
-                const user = await this._Db.create({
-                    Username: username.toLowerCase(),
-                    Password: password
-                })
-                console.log(user)
-                const token = await jwt.sign({
-                    username,
-                    id: user.id
-                }, this._Secret)
+            handler: async (request) => {
+                try {
+                    var { username, password } = request.payload
+                    password = await passhelper.hash(password)
+                    const user = await this._Db.create({
+                        Username: username.toLowerCase(),
+                        Password: password
+                    })
+                    const token = await jwt.sign({
+                        username,
+                        id: user.id
+                    }, this._Secret)
 
-                return {
-                    token
+                    return {
+                        token
+                    }
+                }
+                catch (error) {
+                    console.log("error: ", error)
+                    return {
+                        message: "Usuario já existe",
+                        error: error.message,
+                        status_code:200
+                    }
                 }
             }
         }
@@ -64,27 +73,35 @@ class authRoute extends baseRoute {
                     }
                 }
             },
-            handler: async (request) =>{
-                const {username, password} = request.query
+            handler: async (request) => {
+                try {
+                    const { username, password } = request.query
+                    const [user] = await this._Db.read({
+                        Username: username.toLowerCase()
+                    })
+                    if (!user) {
+                        throw new Error(" Usuario ou Senha incorreta")
+                    }
+                    const valid = await passhelper.compare(password, user.Password)
+                    if (!valid) {
+                        throw new Error(" Usuario ou Senha incorreta")
+                    }
+                    const token = await jwt.sign({
+                        username,
+                        id: user.id
+                    }, this._Secret)
 
-                const [user] = await this._Db.read({
-                    username: username.toLowerCase()
-                })
-                console.log(user)
-                if(!user){
-                    throw new Error(" Usuario ou Senha incorreta")
+                    return {
+                        token
+                    }
                 }
-                const valid = await passhelper.compare(password, user.Password)
-                if(!valid){
-                    throw new Error(" Usuario ou Senha incorreta")
-                }
-                const token = await jwt.sign({
-                    username,
-                    id: user.id
-                }, this._Secret)
-
-                return {
-                    token
+                catch (error) {
+                    console.log("error: ", error)
+                    return {
+                        message: "error interno no servidor",
+                        error: error.message,
+                        status_code:200
+                    }
                 }
             }
         }

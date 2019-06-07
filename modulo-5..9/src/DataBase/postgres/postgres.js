@@ -11,7 +11,7 @@ class Postgres extends IDataBase {
     }
     async create(item) {
         const datavalues = await this._schema.create(item)
-        return datavalues.id
+        return datavalues
     }
     async read(query, skip = 0, limit = 10) {
         var list
@@ -23,7 +23,7 @@ class Postgres extends IDataBase {
             if (query[this._queryAtribut]) {
                 list = list.filter((item) => {//mapear os itens que tem parte do nome procurado, não é case sensitive
                     if (item[this._queryAtribut].toLocaleLowerCase().includes(
-                            query[this._queryAtribut].toLocaleLowerCase()   )
+                            query[this._queryAtribut].toLocaleLowerCase() )
                         ) {
                         return true
                     }
