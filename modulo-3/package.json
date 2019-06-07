@@ -8,11 +8,10 @@
   "author": "Anderson correia",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.18.0",
     "nock": "^10.0.6"
   },
   "devDependencies": {
-    "mocha": "^6.0.2"
+    "mocha": "^6.1.4"
   },
   "description": ""
 }

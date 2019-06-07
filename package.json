@@ -4,7 +4,6 @@
   "description": "",
   "main": "./modulo-5..9/api.js",
   "dependencies": {
-    "axios": "^0.18.0",
     "commander": "^2.19.0",
     "hapi": "^18.1.0",
     "jsonwebtoken": "^8.5.1",
